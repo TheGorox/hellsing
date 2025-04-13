@@ -122,8 +122,11 @@ export class BotUser extends EventEmitter {
 
     async checkForNewNotifications() {
         if (!this.config || !this.webhookUrl) {
+            logger.info('No config or webhook, stopping interval');
 
-            logger.info('No config or webhook, how the fuck did i started?');
+            this.notificatorIsWorking = false;
+            clearInterval(this.notifIntervalId);
+            return;
         }
 
         try {
@@ -238,6 +241,8 @@ export class BotUser extends EventEmitter {
     setWebhookUrl(url: string, init: boolean = false) {
         this.webhookUrl = url;
         this.bitrixRestClient.setWebHookUrl(url);
+
+        this.initNotificator();
 
         if(!init){
             this.saveToDb();
