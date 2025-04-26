@@ -8,6 +8,7 @@ import { setupCommands } from "./commands/index.js";
 import { setupScenes } from "./scenes/index.js";
 import BotUserRepository from '../db/repos/botUser.repository.js';
 import { BotUser, Notification, UserConfig } from './botUser.js';
+import { bbcodeToTelegramHTML } from "./util.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -116,12 +117,14 @@ export class HellsingBot {
     }
 
     async onMessageNotification(notif: Notification, botUser: BotUser){
-        logger.debug('onMESNotif');
         const msg = notif.data;
         const telegramId = botUser.telegramId;
 
+        // convert bitrix's bbcode into the telegram's html
+        const msgFormatted = bbcodeToTelegramHTML(msg.text);
+
         try {
-            await this.bot.telegram.sendMessage(telegramId, `<b>${msg.title}:</b>\n${msg.text}`, {
+            await this.bot.telegram.sendMessage(telegramId, `<b>${msg.title}:</b>\n${msgFormatted}`, {
                 parse_mode: 'HTML'
             });
         } catch (error) {
